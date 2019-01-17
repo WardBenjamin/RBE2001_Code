@@ -1,6 +1,8 @@
 var searchData=
 [
   ['name',['name',['../classRobotControlCenter.html#a7267326e05f39c52b056193472bab6d1',1,'RobotControlCenter']]],
+  ['nextstatus',['nextStatus',['../classStudentsRobot.html#abb9c3966ae26ed3018ce212d571ebc87',1,'StudentsRobot']]],
+  ['nexttime',['nextTime',['../classStudentsRobot.html#a4f9142bac7fe1ccb391f9b9d6a7ef9ee',1,'StudentsRobot']]],
   ['num_5fsamples_5fper_5fsensor',['NUM_SAMPLES_PER_SENSOR',['../config_8h.html#a0cb72739aac6fce394ec8d2fc4d85b10',1,'config.h']]],
   ['num_5fsensors',['NUM_SENSORS',['../config_8h.html#add02d1c189e3b727b722638327642a8b',1,'config.h']]],
   ['numberofpid',['numberOfPID',['../RobotControlCenter_8h.html#aa92f722067465104b12471609ea2d3de',1,'RobotControlCenter.h']]],

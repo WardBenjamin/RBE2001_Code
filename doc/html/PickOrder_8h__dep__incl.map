@@ -1,6 +1,6 @@
 <map id="src/commands/PickOrder.h" name="src/commands/PickOrder.h">
-<area shape="rect" id="node2" href="$PickOrder_8cpp.html" title="src/commands/PickOrder.cpp" alt="" coords="5,80,200,107"/>
-<area shape="rect" id="node3" href="$RobotControlCenter_8h.html" title="src/RobotControlCenter.h" alt="" coords="224,80,395,107"/>
-<area shape="rect" id="node4" href="$RobotControlCenter_8cpp.html" title="src/RobotControlCenter.cpp" alt="" coords="134,155,319,181"/>
-<area shape="rect" id="node5" href="$template_8ino.html" title="template.ino" alt="" coords="344,155,437,181"/>
+<area shape="rect" id="node2" href="$RobotControlCenter_8h.html" title="src/RobotControlCenter.h" alt="" coords="87,80,257,107"/>
+<area shape="rect" id="node5" href="$PickOrder_8cpp.html" title="src/commands/PickOrder.cpp" alt="" coords="281,80,476,107"/>
+<area shape="rect" id="node3" href="$RBE2001Code02_8ino.html" title="RBE2001Code02.ino" alt="" coords="5,155,149,181"/>
+<area shape="rect" id="node4" href="$RobotControlCenter_8cpp.html" title="src/RobotControlCenter.cpp" alt="" coords="174,155,359,181"/>
 </map>
