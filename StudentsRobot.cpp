@@ -92,7 +92,7 @@ void StudentsRobot::updateStateMachine() {
 		digitalWrite(EMITTER_PIN, 1);
 		// Start an interpolation of the motors
 		motor1->startInterpolationDegrees(motor1->getAngleDegrees(), 1000, SIN);
-		motor2->startInterpolationDegrees(motor2->getAngleDegrees(), 1000, SIN);
+		motor2->startInterpolationDegrees(motor2->getAngleDegrees() + 1080, 6000, SIN);
 		motor3->startInterpolationDegrees(motor3->getAngleDegrees(), 1000, SIN);
 		status = WAIT_FOR_MOTORS_TO_FINNISH; // set the state machine to wait for the motors to finish
 		nextStatus = Running; // the next status to move to when the motors finish
