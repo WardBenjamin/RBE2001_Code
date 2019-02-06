@@ -6,6 +6,7 @@
  */
 
 #include "DriveChassis.h"
+#include <math.h>
 
 /**
  * Compute a delta in wheel angle to traverse a specific distance
@@ -20,7 +21,8 @@
  * @return the wheel angle delta in degrees
  */
 float DrivingChassis::distanceToWheelAngle(float distance) {
-	return 0;
+	float deltaAngle = (distance / mywheelRadiusMM) * (180 / M_PI);
+	return deltaAngle;
 }
 
 /**
@@ -37,7 +39,8 @@ float DrivingChassis::distanceToWheelAngle(float distance) {
  * @return is the linear distance the wheel needs to travel given the this CHassis's wheel track
  */
 float DrivingChassis::chassisRotationToWheelDistance(float angle) {
-	return 0;
+	float arcLength = 2 * M_PI * mywheelTrackMM * (angle / 360);
+	return arcLength;
 }
 
 DrivingChassis::~DrivingChassis() {
@@ -54,6 +57,11 @@ DrivingChassis::~DrivingChassis() {
  */
 DrivingChassis::DrivingChassis(PIDMotor * left, PIDMotor * right,
 		float wheelTrackMM, float wheelRadiusMM) {
+	myleft = left;
+	myright = right;
+	mywheelTrackMM = wheelTrackMM;
+	mywheelRadiusMM = wheelRadiusMM;
+
 
 }
 
@@ -66,7 +74,8 @@ DrivingChassis::DrivingChassis(PIDMotor * left, PIDMotor * right,
  * @note this function is fast-return and should not block
  */
 void DrivingChassis::driveForward(float mmDistanceFromCurrent, int msDuration) {
-
+	myleft->startInterpolationDegrees(myleft->getAngleDegrees() + distanceToWheelAngle(mmDistanceFromCurrent), msDuration, SIN);
+	myright->startInterpolationDegrees(myright->getAngleDegrees() + distanceToWheelAngle(mmDistanceFromCurrent), msDuration, SIN);
 }
 
 /**
@@ -78,11 +87,19 @@ void DrivingChassis::driveForward(float mmDistanceFromCurrent, int msDuration) {
  * This rotation is a positive rotation about the Z axis of the robot.
  *
  * @param degreesToRotateBase the number of degrees to rotate
- * @param msDuration is the time in miliseconds that the drive action should take
+ * @param msDuration is the time in milliseconds that the drive action should take
  *
  *  @note this function is fast-return and should not block
  */
 void DrivingChassis::turnDegrees(float degreesToRotateBase, int msDuration) {
+	if(degreesToRotateBase > 0){
+		myright->startInterpolationDegrees(myright->getAngleDegrees() + distanceToWheelAngle(chassisRotationToWheelDistance(degreesToRotateBase)), msDuration, SIN);
+	}else{
+		myleft->startInterpolationDegrees(myleft->getAngleDegrees() + distanceToWheelAngle(chassisRotationToWheelDistance(degreesToRotateBase)), msDuration, SIN);
+	}
+
+
+
 
 }
 
@@ -94,5 +111,5 @@ void DrivingChassis::turnDegrees(float degreesToRotateBase, int msDuration) {
  *  @note this function is fast-return and should not block
  */
 bool DrivingChassis::isChassisDoneDriving() {
-	return false;
+	return (myleft->isInterpolationDone() && myright->isInterpolationDone());
 }
