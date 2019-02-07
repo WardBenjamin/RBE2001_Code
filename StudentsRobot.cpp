@@ -7,6 +7,8 @@
 
 #include "StudentsRobot.h"
 
+
+
 StudentsRobot::StudentsRobot(ServoEncoderPIDMotor * motor1,
 		ServoEncoderPIDMotor * motor2, HBridgeEncoderPIDMotor * motor3,
 		Servo * servo) {
@@ -78,34 +80,40 @@ StudentsRobot::StudentsRobot(ServoEncoderPIDMotor * motor1,
  * Seperate from running the motor control,
  * update the state machine for running the final project code here
  */
+ int timeIdx = 0;
+ long time1 = 0;
+ double values[400][2];
+ 
 void StudentsRobot::updateStateMachine() {
-	DrivingChassis *chassis = new DrivingChassis(motor1, motor2, 112, 53);
+	//DrivingChassis *chassis = new DrivingChassis(motor1, motor2, 112, 53);
 	long now = millis();
+  
 	switch (status) {
 	case StartupRobot:
 		//Do this once at startup
 		status = StartRunning;
 		Serial.println("StudentsRobot::updateStateMachine StartupRobot here ");
+    
 		break;
 	case StartRunning:
 		Serial.println("Start Running");
 
-		digitalWrite(EMITTER_PIN, 1);
-    status = LineFollowing;
-		nextStatus = Running;
-		/*
+		//digitalWrite(EMITTER_PIN, 1);
+    //status = LineFollowing;
+		//nextStatus = Running;
+		
 		// Start an interpolation of the motors
-		motor1->startInterpolationDegrees(motor1->getAngleDegrees(), 1000, SIN);
-		motor2->startInterpolationDegrees(motor2->getAngleDegrees() + 1080, 6000, SIN);
-		motor3->startInterpolationDegrees(motor3->getAngleDegrees(), 1000, SIN);
+		motor2->startInterpolationDegrees(motor2->getAngleDegrees()+1080, 6000, SIN);
+		//motor2->startInterpolationDegrees(motor2->getAngleDegrees() + 1080, 6000, SIN);
+		//motor3->startInterpolationDegrees(motor3->getAngleDegrees(), 1000, SIN);
+    //chassis->driveForward(1000, 10000);
 		status = WAIT_FOR_MOTORS_TO_FINNISH; // set the state machine to wait for the motors to finish
-		nextStatus = Running; // the next status to move to when the motors finish
+		nextStatus = Halting; // the next status to move to when the motors finish
 		startTime = now + 1000; // the motors should be done in 1000 ms
 		nextTime = startTime + 1000; // the next timer loop should be 1000ms after the motors stop
-		*/
+		
 		break;
 	case LineFollowing:
-		Serial.printf("%d: %d,%d\n", now, analogRead(LINE_SENSE_ONE), analogRead(LINE_SENSE_TWO));
 		break;
 	case Running:
 		// Set up a non-blocking 1000 ms delay
@@ -127,18 +135,28 @@ void StudentsRobot::updateStateMachine() {
 		}
 		break;
 	case WAIT_FOR_MOTORS_TO_FINNISH:
-		if (motor1->isInterpolationDone() && motor2->isInterpolationDone()
-				&& motor3->isInterpolationDone()) {
+  //chassis->isChassisDoneDriving()
+  
+		if (motor1->isInterpolationDone() && motor2->isInterpolationDone()) {
 			status = nextStatus;
 		}
+//   else if (time1 <= millis()) {
+//       values[timeIdx][0] = motor2->getVelocityDegreesPerSecond() / 6;
+//       values[timeIdx][1] = motor2->getAngleDegrees();
+//      timeIdx++;
+//      time1 = millis() + 20;
+//   }
 		break;
 	case Halting:
 		// save state and enter safe mode
-		Serial.println("Halting State machine");
+		//Serial.println("Halting State machine");
 		digitalWrite(EMITTER_PIN, 0);
 		motor3->stop();
 		motor2->stop();
 		motor1->stop();
+//   for(int i = 0; i < 400; i++){
+//    Serial.printf("%f,%f\n", values[i][0], values[i][1]);
+//   }
 
 		status = Halt;
 		break;
