@@ -23,8 +23,8 @@ StudentsRobot::StudentsRobot(ServoEncoderPIDMotor * motor1,
 	motor2->myPID.sampleRateMs = 30; // 330hz servo, 3ms update, 30 ms PID
 	motor3->myPID.sampleRateMs = 1;  // 10khz H-Bridge, 0.1ms update, 1 ms PID
 	// Set default P.I.D gains
-	motor1->SetTunings(0.00015, 0, 0);
-	motor2->SetTunings(0.00015, 0, 0);
+	motor1->SetTunings(0.00003, 0.00002, 0.00004);
+	motor2->SetTunings(0.00003, 0.00002, 0.00004);
 	motor3->SetTunings(0.00015, 0, 0);
 
 	// After attach, compute ratios and bounding
@@ -103,12 +103,12 @@ void StudentsRobot::updateStateMachine() {
 		//nextStatus = Running;
 		
 		// Start an interpolation of the motors
-		motor2->startInterpolationDegrees(motor2->getAngleDegrees()+1080, 6000, SIN);
-		//motor2->startInterpolationDegrees(motor2->getAngleDegrees() + 1080, 6000, SIN);
-		//motor3->startInterpolationDegrees(motor3->getAngleDegrees(), 1000, SIN);
+		motor1->startInterpolationDegrees(motor2->getAngleDegrees()+1080, 6000, SIN);
+		motor2->startInterpolationDegrees(motor2->getAngleDegrees() + 1080, 6000, SIN);
+		motor3->startInterpolationDegrees(motor3->getAngleDegrees() + 1080, 1000, SIN);
     //chassis->driveForward(1000, 10000);
 		status = WAIT_FOR_MOTORS_TO_FINNISH; // set the state machine to wait for the motors to finish
-		nextStatus = Halting; // the next status to move to when the motors finish
+		nextStatus = Running; // the next status to move to when the motors finish
 		startTime = now + 1000; // the motors should be done in 1000 ms
 		nextTime = startTime + 1000; // the next timer loop should be 1000ms after the motors stop
 		
@@ -137,7 +137,7 @@ void StudentsRobot::updateStateMachine() {
 	case WAIT_FOR_MOTORS_TO_FINNISH:
   //chassis->isChassisDoneDriving()
   
-		if (motor1->isInterpolationDone() && motor2->isInterpolationDone()) {
+		if (motor1->isInterpolationDone() && motor2->isInterpolationDone() && motor3->isInterpolationDone()) {
 			status = nextStatus;
 		}
 //   else if (time1 <= millis()) {

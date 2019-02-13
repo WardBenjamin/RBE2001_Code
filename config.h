@@ -27,7 +27,7 @@
 /**
  * Drive motor 3 10Khz full duty PWM pin
  */
-#define MOTOR3_PWM 12
+#define MOTOR3_PWM 23
 /**
  * Pin for setting the direction of the H-Bridge
  */

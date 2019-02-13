@@ -6,6 +6,7 @@
  */
 #include "Arduino.h"
 #include "RBEPID.h"
+#include <math.h>
 
 //Class constructor
 RBEPID::RBEPID() {
@@ -27,22 +28,24 @@ void RBEPID::setpid(float P, float I, float D) {
  * @return a value from -1.0 to 1.0 representing the PID control signel
  */
 float RBEPID::calc(double setPoint, double curPosition) {
-
 	// calculate error
 	float err = setPoint - curPosition;
 	// calculate derivative of error
-	//TODO
+	float derErr = err - last_error;
 	// calculate integral error. Running average is best but hard to implement
-	//TODO
-	// sum up the error value to send to the motor based off gain values.
-	//TODO
 
-	float out = err * kp;	// simple P controller
-	//return the control signal from -1 to 1
-	if (out > 1)
-		out = 1;
-	if (out < -1)
-		out = -1;
+  //check for sign change and reset integral buffer
+  if((last_error != 0) && (err / last_error) < 0){
+    clearIntegralBuffer();
+  }
+  
+	sum_error += err;
+	// sum up the error value to send to the motor based off gain values.
+	float out = (kp * err) + (ki * sum_error) + (kd * derErr);
+  last_error = err;
+
+  out = fmin(out, 1);
+  out = fmax(out, -1);
 	return out;
 }
 
@@ -51,5 +54,5 @@ float RBEPID::calc(double setPoint, double curPosition) {
  *
  */
 void RBEPID::clearIntegralBuffer() {
-	//TODO implement this when implementing the integral term
+	sum_error = 0;
 }
