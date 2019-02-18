@@ -23,8 +23,8 @@ StudentsRobot::StudentsRobot(ServoEncoderPIDMotor * motor1,
 	motor2->myPID.sampleRateMs = 30; // 330hz servo, 3ms update, 30 ms PID
 	motor3->myPID.sampleRateMs = 1;  // 10khz H-Bridge, 0.1ms update, 1 ms PID
 	// Set default P.I.D gains
-	motor1->SetTunings(0.00003, 0.00002, 0.00004);
-	motor2->SetTunings(0.00003, 0.00002, 0.00004);
+	motor1->SetTunings(0.15, 0.0001, 1.5);
+	motor2->SetTunings(0.15, 0.0001, 1.5);
 	motor3->SetTunings(0.00015, 0, 0);
 
 	// After attach, compute ratios and bounding
