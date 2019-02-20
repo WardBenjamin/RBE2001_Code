@@ -98,7 +98,7 @@ void StudentsRobot::updateStateMachine() {
 	case StartRunning:
 		Serial.println("Start Running");
 
-		//digitalWrite(EMITTER_PIN, 1);
+		digitalWrite(EMITTER_PIN, 1);
     //status = LineFollowing;
 		//nextStatus = Running;
 		
