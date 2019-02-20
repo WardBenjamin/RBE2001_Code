@@ -25,7 +25,7 @@ StudentsRobot::StudentsRobot(ServoEncoderPIDMotor * motor1,
 	// Set default P.I.D gains
 	motor1->SetTunings(0.15, 0.0001, 1.5);
 	motor2->SetTunings(0.15, 0.0001, 1.5);
-	motor3->SetTunings(2, 0, 0);
+	motor3->SetTunings(0.05, 0, 0.7);
 
 	// After attach, compute ratios and bounding
 	double motorToWheel = 3;
