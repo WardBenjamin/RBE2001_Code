@@ -25,7 +25,7 @@ StudentsRobot::StudentsRobot(ServoEncoderPIDMotor * motor1,
 	// Set default P.I.D gains
 	motor1->SetTunings(0.15, 0.0001, 1.5);
 	motor2->SetTunings(0.15, 0.0001, 1.5);
-	motor3->SetTunings(0.00015, 0, 0);
+	motor3->SetTunings(2, 0, 0);
 
 	// After attach, compute ratios and bounding
 	double motorToWheel = 3;
@@ -105,7 +105,7 @@ void StudentsRobot::updateStateMachine() {
 		// Start an interpolation of the motors
 		motor1->startInterpolationDegrees(motor2->getAngleDegrees()+1080, 6000, SIN);
 		motor2->startInterpolationDegrees(motor2->getAngleDegrees() + 1080, 6000, SIN);
-		motor3->startInterpolationDegrees(motor3->getAngleDegrees() + 1080, 1000, SIN);
+		motor3->startInterpolationDegrees(motor3->getAngleDegrees() + 1080, 6000, SIN);
     //chassis->driveForward(1000, 10000);
 		status = WAIT_FOR_MOTORS_TO_FINNISH; // set the state machine to wait for the motors to finish
 		nextStatus = Running; // the next status to move to when the motors finish
