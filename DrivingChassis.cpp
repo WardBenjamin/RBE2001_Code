@@ -39,7 +39,7 @@ float DrivingChassis::distanceToWheelAngle(float distance) {
  * @return is the linear distance the wheel needs to travel given the this CHassis's wheel track
  */
 float DrivingChassis::chassisRotationToWheelDistance(float angle) {
-	float arcLength = 2 * M_PI * mywheelTrackMM * (angle / 360);
+	float arcLength = 2 * M_PI * (mywheelTrackMM / 2) * (angle / 360);
 	return arcLength;
 }
 
@@ -94,7 +94,9 @@ void DrivingChassis::driveForward(float mmDistanceFromCurrent, int msDuration) {
 void DrivingChassis::turnDegrees(float degreesToRotateBase, int msDuration) {
 	if(degreesToRotateBase > 0){
 		myright->startInterpolationDegrees(myright->getAngleDegrees() + distanceToWheelAngle(chassisRotationToWheelDistance(degreesToRotateBase)), msDuration, SIN);
+    myleft->startInterpolationDegrees(myleft->getAngleDegrees() - distanceToWheelAngle(chassisRotationToWheelDistance(degreesToRotateBase)), msDuration, SIN);
 	}else{
+    myright->startInterpolationDegrees(myright->getAngleDegrees() - distanceToWheelAngle(chassisRotationToWheelDistance(degreesToRotateBase)), msDuration, SIN);
 		myleft->startInterpolationDegrees(myleft->getAngleDegrees() + distanceToWheelAngle(chassisRotationToWheelDistance(degreesToRotateBase)), msDuration, SIN);
 	}
 

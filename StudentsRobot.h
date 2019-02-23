@@ -14,6 +14,7 @@
 #include "src/pid/ServoAnalogPIDMotor.h"
 #include <ESP32Servo.h>
 
+#include "LineFollow.h"
 #include "DriveChassis.h"
 
 /**
@@ -22,9 +23,22 @@
  * Feel free to add ot remove values from here
  */
 enum RobotStateMachine {
-	StartupRobot = 0, StartRunning = 1, Running = 2, Halting = 3, Halt = 4,WAIT_FOR_MOTORS_TO_FINNISH=5,WAIT_FOR_TIME=6,LineFollowing=7,
-
-};
+	StartupRobot = 0,
+	StartRunning = 1,
+	Running = 2,
+	Halting = 3,
+	Halt = 4,
+	WAIT_FOR_MOTORS_TO_FINISH=5,
+	WAIT_FOR_TIME=6,
+	LineFollowing=7,
+	LF_Backup_Init=8,
+  LF_Backup_Detect = 9,
+  LF_Transition_1 = 10,
+  LF_Transition_2 = 11,
+	LF_Forward_Init = 12,
+  LF_Forward_Detect = 13,
+  STOP = 14
+  };
 /**
  * @enum ComStackStatusState
  * These are values for the communications stack
@@ -60,7 +74,11 @@ private:
 	long nextTime =0;
   long startTime =0;
 	RobotStateMachine nextStatus = StartupRobot;
+  DrivingChassis * chassis;
+LineFollow * lineFollower;
 public:
+
+
 	/**
 	 * Constructor for StudentsRobot
 	 *

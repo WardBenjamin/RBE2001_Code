@@ -71,6 +71,8 @@ StudentsRobot::StudentsRobot(ServoEncoderPIDMotor * motor1,
 					(1 / 60.0) * // Convert to seconds
 					360.0); // convert to degrees
 
+chassis = new DrivingChassis(motor1, motor2, 220, 27);
+lineFollower = new LineFollow(chassis);
 	// Set up the line tracker
 	pinMode(LINE_SENSE_ONE, ANALOG);
 	pinMode(LINE_SENSE_TWO, ANALOG);
@@ -80,53 +82,86 @@ StudentsRobot::StudentsRobot(ServoEncoderPIDMotor * motor1,
  * Seperate from running the motor control,
  * update the state machine for running the final project code here
  */
+
+
+
  int timeIdx = 0;
  long time1 = 0;
  double values[400][2];
  
 void StudentsRobot::updateStateMachine() {
-	//DrivingChassis *chassis = new DrivingChassis(motor1, motor2, 112, 53);
+	
 	long now = millis();
   
 	switch (status) {
 	case StartupRobot:
-		//Do this once at startup
-		status = StartRunning;
-		Serial.println("StudentsRobot::updateStateMachine StartupRobot here ");
-    
+    Serial.println("State Machine Startup");
+		status = LF_Backup_Init;
 		break;
 	case StartRunning:
-		Serial.println("Start Running");
-
-		digitalWrite(EMITTER_PIN, 1);
-    //status = LineFollowing;
-		//nextStatus = Running;
-		
-		// Start an interpolation of the motors
-		motor1->startInterpolationDegrees(motor2->getAngleDegrees()+1080, 6000, SIN);
-		motor2->startInterpolationDegrees(motor2->getAngleDegrees() + 1080, 6000, SIN);
-		motor3->startInterpolationDegrees(motor3->getAngleDegrees() + 1080, 6000, SIN);
-    //chassis->driveForward(1000, 10000);
-		status = WAIT_FOR_MOTORS_TO_FINNISH; // set the state machine to wait for the motors to finish
-		nextStatus = Running; // the next status to move to when the motors finish
-		startTime = now + 1000; // the motors should be done in 1000 ms
-		nextTime = startTime + 1000; // the next timer loop should be 1000ms after the motors stop
-		
+    lineFollower->readSensors();
+    nextTime = millis() + 1000;
+    nextStatus = StartRunning;
+    status = WAIT_FOR_TIME;
 		break;
-	case LineFollowing:
+	case LF_Backup_Init:
+    Serial.println("State: Backup_Init");
+    chassis->driveForward(-10, 0);
+    status = LF_Backup_Detect;
 		break;
-	case Running:
-		// Set up a non-blocking 1000 ms delay
-		status = WAIT_FOR_TIME;
-		nextTime = nextTime + 1000; // ensure no timer drift by incremeting the target
-		// After 1000 ms, come back to this state
-		nextStatus = Running;
-
-		// Do something
-		if (!digitalRead(0))
-			Serial.println(
-					" Running State Machine " + String((now - startTime)));
-		break;
+  case LF_Backup_Detect:
+    Serial.println("State: Backup_Detect");
+    lineFollower->readSensors();
+    if(lineFollower->sensor1Val >= lineFollower->BLACK && lineFollower->sensor2Val >= lineFollower->BLACK){
+      nextStatus = LF_Transition_1;
+      status = STOP;
+    }
+    else{
+      if(lineFollower->sensor1Val >= lineFollower->BLACK && lineFollower->sensor2Val <= lineFollower->WHITE){
+    chassis->turnDegrees(30, 0);
+    }
+    else if(lineFollower->sensor1Val <= lineFollower->WHITE && lineFollower->sensor2Val >= lineFollower->BLACK){
+      chassis->turnDegrees(-30, 0);
+    }
+    nextStatus = LF_Backup_Init;
+    status = WAIT_FOR_MOTORS_TO_FINISH;  
+    }
+    break;
+  case LF_Transition_1:
+    Serial.println("State: LF_Transition_1");
+    chassis->driveForward(275, 4000);
+    nextStatus = LF_Transition_2;
+    status = WAIT_FOR_MOTORS_TO_FINISH;
+    break;
+  case LF_Transition_2:
+    Serial.println("State: LF_Transition_2");
+    chassis->turnDegrees(90, 4000);
+    nextStatus = LF_Forward_Init;
+    status = WAIT_FOR_MOTORS_TO_FINISH;
+    break;
+  case LF_Forward_Init:
+    Serial.println("State: LF_Forward_Init");
+    chassis->driveForward(10, 0);
+    status = LF_Forward_Detect;
+    break;
+  case LF_Forward_Detect:
+    Serial.println("State: LF_Forward_Detect");
+    lineFollower->readSensors();
+    if(lineFollower->sensor1Val >= lineFollower->BLACK && lineFollower->sensor2Val >= lineFollower->BLACK){
+      //nextStatus = LF_ForwardInit;
+      status = Halting;
+    }
+    else{
+      if(lineFollower->sensor1Val >= lineFollower->BLACK && lineFollower->sensor2Val <= lineFollower->WHITE){
+    chassis->turnDegrees(-30, 0);
+    }
+    else if(lineFollower->sensor1Val <= lineFollower->WHITE && lineFollower->sensor2Val >= lineFollower->BLACK){
+      chassis->turnDegrees(30, 0);
+    }
+    nextStatus = LF_Forward_Init;
+    status = WAIT_FOR_MOTORS_TO_FINISH;  
+    }
+    break;
 	case WAIT_FOR_TIME:
 		// Check to see if enough time has elapsed
 		if (nextTime <= millis()) {
@@ -134,36 +169,30 @@ void StudentsRobot::updateStateMachine() {
 			status = nextStatus;
 		}
 		break;
-	case WAIT_FOR_MOTORS_TO_FINNISH:
-  //chassis->isChassisDoneDriving()
-  
-		if (motor1->isInterpolationDone() && motor2->isInterpolationDone() && motor3->isInterpolationDone()) {
+	case WAIT_FOR_MOTORS_TO_FINISH:
+  Serial.println("State: WAIT_FOR_MOTORS_TO_FINISH");
+		if (chassis->isChassisDoneDriving()) {
 			status = nextStatus;
 		}
-//   else if (time1 <= millis()) {
-//       values[timeIdx][0] = motor2->getVelocityDegreesPerSecond() / 6;
-//       values[timeIdx][1] = motor2->getAngleDegrees();
-//      timeIdx++;
-//      time1 = millis() + 20;
-//   }
 		break;
+  case STOP:
+    Serial.println("State: STOP");
+    motor2->stop();
+    motor1->stop();
+    status = nextStatus;
+    break;
 	case Halting:
 		// save state and enter safe mode
-		//Serial.println("Halting State machine");
+		Serial.println("Halting State machine");
 		digitalWrite(EMITTER_PIN, 0);
 		motor3->stop();
 		motor2->stop();
 		motor1->stop();
-//   for(int i = 0; i < 400; i++){
-//    Serial.printf("%f,%f\n", values[i][0], values[i][1]);
-//   }
-
 		status = Halt;
 		break;
 	case Halt:
 		// in safe mode
 		break;
-
 	}
 }
 

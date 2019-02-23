@@ -32,6 +32,7 @@
  * Pin for setting the direction of the H-Bridge
  */
 #define MOTOR3_DIR 26
+#define MOTOR3_ENABLE_PIN 13
 
 //Encoder pins
 #define MOTOR1_ENCA 19
