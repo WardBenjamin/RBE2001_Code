@@ -37,7 +37,9 @@ enum RobotStateMachine {
   LF_Transition_2 = 11,
 	LF_Forward_Init = 12,
   LF_Forward_Detect = 13,
-  STOP = 14
+  STOP = 14,
+  CountLine = 15,
+  PlacePanel = 16
   };
 /**
  * @enum ComStackStatusState
@@ -73,9 +75,14 @@ private:
 	float rsensorVal=0;
 	long nextTime =0;
   long startTime =0;
+  int lineCount = 0;
 	RobotStateMachine nextStatus = StartupRobot;
   DrivingChassis * chassis;
 LineFollow * lineFollower;
+
+float roofAngle = 0;
+float roofPos =1;
+
 public:
 
 

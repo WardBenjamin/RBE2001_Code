@@ -1,3 +1,5 @@
+
+
 /*
  * StudentsRobot.cpp
  *
@@ -23,9 +25,9 @@ StudentsRobot::StudentsRobot(ServoEncoderPIDMotor * motor1,
 	motor2->myPID.sampleRateMs = 30; // 330hz servo, 3ms update, 30 ms PID
 	motor3->myPID.sampleRateMs = 1;  // 10khz H-Bridge, 0.1ms update, 1 ms PID
 	// Set default P.I.D gains
-	motor1->SetTunings(0.15, 0.0001, 1.5);
-	motor2->SetTunings(0.15, 0.0001, 1.5);
-	motor3->SetTunings(0.05, 0, 0.7);
+	motor1->SetTunings(0.15, 0.0001, 1.6);
+	motor2->SetTunings(0.15, 0.0001, 1.6);
+	motor3->SetTunings(0.01, 0, 0.001);
 
 	// After attach, compute ratios and bounding
 	double motorToWheel = 3;
@@ -73,10 +75,15 @@ StudentsRobot::StudentsRobot(ServoEncoderPIDMotor * motor1,
 
 chassis = new DrivingChassis(motor1, motor2, 220, 27);
 lineFollower = new LineFollow(chassis);
+
 	// Set up the line tracker
+
 	pinMode(LINE_SENSE_ONE, ANALOG);
 	pinMode(LINE_SENSE_TWO, ANALOG);
 	pinMode(EMITTER_PIN, OUTPUT);
+ //pinMode(SERVO_PIN, OUTPUT);
+ pinMode(MOTOR3_ENABLE_PIN, OUTPUT);
+ pinMode(MOTOR3_DIR, OUTPUT);
 }
 /**
  * Seperate from running the motor control,
@@ -93,16 +100,41 @@ void StudentsRobot::updateStateMachine() {
 	
 	long now = millis();
   
+  
 	switch (status) {
 	case StartupRobot:
+    digitalWrite(EMITTER_PIN, HIGH);
+    digitalWrite(MOTOR3_ENABLE_PIN, HIGH);
+    servo->setPeriodHertz(50);
+    servo->attach(SERVO_PIN);
+    
     Serial.println("State Machine Startup");
-		status = LF_Backup_Init;
+		//nextStatus = LF_Backup_Init;
+    //status = WAIT_FOR_MOTORS_TO_FINISH;
+
+  servo->write(170);
+  status = WAIT_FOR_MOTORS_TO_FINISH;
+    nextStatus = LF_Backup_Init;
+   motor3->startInterpolationDegrees(ENCODER_POS_1, 5000, SIN);
+   //digitalWrite(SERVO_PIN, HIGH);
+  //status = LF_Transition_2;
+    
+    
+    //status = LF_Backup_Init;
 		break;
 	case StartRunning:
+    //Serial.println("Startrunning");
     lineFollower->readSensors();
     nextTime = millis() + 1000;
     nextStatus = StartRunning;
+    motor1->startInterpolationDegrees(motor1->getAngleDegrees() + 720, 5000, SIN);
+    //nextTime = now + 1500;
     status = WAIT_FOR_TIME;
+
+  
+    
+    status = WAIT_FOR_TIME;
+    
 		break;
 	case LF_Backup_Init:
     Serial.println("State: Backup_Init");
@@ -113,15 +145,21 @@ void StudentsRobot::updateStateMachine() {
     Serial.println("State: Backup_Detect");
     lineFollower->readSensors();
     if(lineFollower->sensor1Val >= lineFollower->BLACK && lineFollower->sensor2Val >= lineFollower->BLACK){
-      nextStatus = LF_Transition_1;
-      status = STOP;
+      lineCount++;
+      if((roofPos == 1 && lineCount == 1) || (roofPos == 2 && lineCount == 2)){
+       nextStatus = LF_Transition_1;
+      status = STOP;  
+      }
+      
     }
     else{
       if(lineFollower->sensor1Val >= lineFollower->BLACK && lineFollower->sensor2Val <= lineFollower->WHITE){
-    chassis->turnDegrees(30, 0);
+    //chassis->turnDegrees(30, 0);
+    motor1->startInterpolationDegrees(motor1->getAngleDegrees() - 360, 1000, SIN);
     }
     else if(lineFollower->sensor1Val <= lineFollower->WHITE && lineFollower->sensor2Val >= lineFollower->BLACK){
-      chassis->turnDegrees(-30, 0);
+      //chassis->turnDegrees(-30, 0);
+      motor2->startInterpolationDegrees(motor2->getAngleDegrees() - 360, 1000, SIN);
     }
     nextStatus = LF_Backup_Init;
     status = WAIT_FOR_MOTORS_TO_FINISH;  
@@ -129,40 +167,56 @@ void StudentsRobot::updateStateMachine() {
     break;
   case LF_Transition_1:
     Serial.println("State: LF_Transition_1");
-    chassis->driveForward(275, 4000);
+    chassis->driveForward(15, 1000);
     nextStatus = LF_Transition_2;
     status = WAIT_FOR_MOTORS_TO_FINISH;
     break;
   case LF_Transition_2:
     Serial.println("State: LF_Transition_2");
-    chassis->turnDegrees(90, 4000);
+    chassis->turnDegrees(-80, 4000);
     nextStatus = LF_Forward_Init;
     status = WAIT_FOR_MOTORS_TO_FINISH;
     break;
   case LF_Forward_Init:
     Serial.println("State: LF_Forward_Init");
-    chassis->driveForward(10, 0);
-    status = LF_Forward_Detect;
+    chassis->driveForward(50, 1000);
+    nextStatus = LF_Forward_Detect;
+    status = WAIT_FOR_MOTORS_TO_FINISH;
     break;
   case LF_Forward_Detect:
+    
+    nextStatus = LF_Forward_Init;
+    status = WAIT_FOR_MOTORS_TO_FINISH;
     Serial.println("State: LF_Forward_Detect");
     lineFollower->readSensors();
-    if(lineFollower->sensor1Val >= lineFollower->BLACK && lineFollower->sensor2Val >= lineFollower->BLACK){
+    if(lineFollower->sensor1Val >= lineFollower->BLACK && lineFollower->sensor2Val >= lineFollower->BLACK){ //Horizontal Line Detected
       //nextStatus = LF_ForwardInit;
-      status = Halting;
+      lineCount++;
+      if(lineCount == 2){
+        status=Halting;
+      }else{
+        status = CountLine;  
+      }
+      
     }
     else{
       if(lineFollower->sensor1Val >= lineFollower->BLACK && lineFollower->sensor2Val <= lineFollower->WHITE){
-    chassis->turnDegrees(-30, 0);
+    chassis->turnDegrees(30, 100);
+    //motor1->startInterpolationDegrees(motor1->getAngleDegrees() - 360, 1000, SIN);
     }
     else if(lineFollower->sensor1Val <= lineFollower->WHITE && lineFollower->sensor2Val >= lineFollower->BLACK){
-      chassis->turnDegrees(30, 0);
-    }
-    nextStatus = LF_Forward_Init;
-    status = WAIT_FOR_MOTORS_TO_FINISH;  
+      chassis->turnDegrees(-30, 100);
+      //motor2->startInterpolationDegrees(motor2->getAngleDegrees() - 360, 1000, SIN);
+    }  
     }
     break;
+   case CountLine:
+    chassis->driveForward(15, 1000);
+    //nextStatus = LF_Forward_Detect;
+    status = WAIT_FOR_MOTORS_TO_FINISH;    
+   break;
 	case WAIT_FOR_TIME:
+    Serial.println(motor1->getAngleDegrees());
 		// Check to see if enough time has elapsed
 		if (nextTime <= millis()) {
 			// if the time is up, move on to the next state
@@ -170,8 +224,9 @@ void StudentsRobot::updateStateMachine() {
 		}
 		break;
 	case WAIT_FOR_MOTORS_TO_FINISH:
-  Serial.println("State: WAIT_FOR_MOTORS_TO_FINISH");
-		if (chassis->isChassisDoneDriving()) {
+  //Serial.println("State: WAIT_FOR_MOTORS_TO_FINISH");
+  //Serial.println(motor3->getAngleDegrees());
+		if (chassis->isChassisDoneDriving() && motor3->isInterpolationDone()) {
 			status = nextStatus;
 		}
 		break;
@@ -279,12 +334,13 @@ void StudentsRobot::EStop(float * buffer) {
  * @see RobotControlCenter::fastLoop
  */
 void StudentsRobot::PickOrder(float * buffer) {
-	float pickupMaterial = buffer[0];
-	float dropoffAngle = buffer[1];
-	float dropoffPosition = buffer[2];
-	Serial.println(
+	//float pickupMaterial = buffer[0];
+	roofAngle = buffer[1];
+	roofPos = buffer[2];
+	/*Serial.println(
 			"StudentsRobot::PickOrder Recived from : " + String(pickupMaterial)
 					+ " " + String(dropoffAngle) + " "
 					+ String(dropoffPosition));
+  */
 	myCommandsStatus = Waiting_for_approval_to_pickup;
 }

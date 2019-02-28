@@ -92,13 +92,13 @@ void DrivingChassis::driveForward(float mmDistanceFromCurrent, int msDuration) {
  *  @note this function is fast-return and should not block
  */
 void DrivingChassis::turnDegrees(float degreesToRotateBase, int msDuration) {
-	if(degreesToRotateBase > 0){
+	//if(degreesToRotateBase > 0){
 		myright->startInterpolationDegrees(myright->getAngleDegrees() + distanceToWheelAngle(chassisRotationToWheelDistance(degreesToRotateBase)), msDuration, SIN);
     myleft->startInterpolationDegrees(myleft->getAngleDegrees() - distanceToWheelAngle(chassisRotationToWheelDistance(degreesToRotateBase)), msDuration, SIN);
-	}else{
+	/*}else{
     myright->startInterpolationDegrees(myright->getAngleDegrees() - distanceToWheelAngle(chassisRotationToWheelDistance(degreesToRotateBase)), msDuration, SIN);
 		myleft->startInterpolationDegrees(myleft->getAngleDegrees() + distanceToWheelAngle(chassisRotationToWheelDistance(degreesToRotateBase)), msDuration, SIN);
-	}
+	}*/
 
 
 
