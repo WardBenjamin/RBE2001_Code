@@ -39,7 +39,9 @@ enum RobotStateMachine {
   LF_Forward_Detect = 13,
   STOP = 14,
   CountLine = 15,
-  PlacePanel = 16
+  PlacePanel = 16,
+  WAIT_FOR_APPROVE = 17,
+  PickupPanel = 18
   };
 /**
  * @enum ComStackStatusState
@@ -77,9 +79,10 @@ private:
   long startTime =0;
   int lineCount = 0;
 	RobotStateMachine nextStatus = StartupRobot;
+    RobotStateMachine lastStatus = StartupRobot;
   DrivingChassis * chassis;
 LineFollow * lineFollower;
-
+bool approve = false;
 float roofAngle = 0;
 float roofPos =1;
 
