@@ -41,7 +41,28 @@ enum RobotStateMachine {
   CountLine = 15,
   PlacePanel = 16,
   WAIT_FOR_APPROVE = 17,
-  PickupPanel = 18
+  PickupPanelStart = 18,
+  WAIT_FOR_PICKORDER = 19,
+   LF_Transition2_1 = 20,
+  LF_Transition2_2 = 21,
+  LF_Backup2_Init=22,
+  LF_Backup2_Detect = 23,
+  Transition_Post_Dropoff = 24,
+  LF_Forward2_Init = 25,
+  LF_Forward2_Detect = 26,
+  LF_Transition3_1 = 27,
+  LF_Transition3_2 = 28,
+  LF_Backup3_Init=29,
+  LF_Backup3_Detect = 30,
+  Transition_Post_Pickup = 31,
+  LF_Forward3_Init = 32,
+  LF_Forward3_Detect = 33,
+  PickupPanel =34,
+  CountLineReverse = 35,
+  LF_Forward4_Init = 36,
+  LF_Forward4_Detect = 37,
+  PlacePanelFinal =38
+  
   };
 /**
  * @enum ComStackStatusState
@@ -78,13 +99,17 @@ private:
 	long nextTime =0;
   long startTime =0;
   int lineCount = 0;
+  int numLines = 3;
+  int dirMult = 1;
 	RobotStateMachine nextStatus = StartupRobot;
     RobotStateMachine lastStatus = StartupRobot;
   DrivingChassis * chassis;
 LineFollow * lineFollower;
 bool approve = false;
+bool pickorder = false;
 float roofAngle = 0;
 float roofPos =1;
+float material  =0;
 
 public:
 

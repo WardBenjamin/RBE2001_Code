@@ -23,8 +23,8 @@
  */
 class DrivingChassis {
 private:
-	PIDMotor * myleft;
-	PIDMotor * myright;
+	//PIDMotor * myleft;
+	//PIDMotor * myright;
 	float mywheelTrackMM;
 	float mywheelRadiusMM;
 	/**
@@ -55,6 +55,8 @@ private:
 	 */
 	float chassisRotationToWheelDistance(float angle);
 public:
+	PIDMotor * myleft;
+		PIDMotor * myright;
 	virtual ~DrivingChassis();
 
 	/**

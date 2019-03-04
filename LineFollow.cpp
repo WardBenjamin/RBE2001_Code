@@ -7,6 +7,7 @@
 
 #include "LineFollow.h"
 #include "Arduino.h"
+#include "StudentsRobot.h"
 
 LineFollow::~LineFollow() {
   // do nothing
@@ -16,6 +17,7 @@ LineFollow::~LineFollow() {
     this->sensor1Val = 0;
     this->sensor2Val = 0;
     this->lineCount = 0;
+    this->numLines = 0;
 	}
 	/**
 	 * read read sensor(s) and update values
@@ -28,29 +30,37 @@ LineFollow::~LineFollow() {
 	/**
 	 * followLine take appropriate chassis action based on sensor values
 	 */
-	void LineFollow::followLine(){
-		if(sensor1Val >= BLACK && sensor2Val <= WHITE){
-		chassis->turnDegrees(-30, 0);
-     //Serial.printf("Sen1:BLACK,Sen2:WHITE\n", sensor1Val, sensor2Val);
-     //Serial.println("Turning Right");
-		}
-		else if(sensor1Val <= WHITE && sensor2Val >= BLACK){
-			chassis->turnDegrees(30, 0);
-      //Serial.printf("Sen1:WHITE,Sen2:BLACK\n", sensor1Val, sensor2Val);
-      //Serial.println("Turning Left");
-		}
-		else if(sensor1Val >= BLACK && sensor2Val >= BLACK){
-      //Serial.println("Horizontal Line");
-      //Serial.printf("Sen1:BLACK,Sen2:BLACK\n", sensor1Val, sensor2Val);
-					lineCount++;
-		}
-		else if(sensor1Val <= WHITE && sensor2Val <= WHITE){
-      //Serial.printf("Sen1:WHITE,Sen2:WHITE\n", sensor1Val, sensor2Val);
-      //Serial.println("Moving Forward");
-			chassis->driveForward(10, 0);
-     
-		}
+	void LineFollow::followLineDetect(RobotStateMachine * myStatus, RobotStateMachine * myNextStatus, RobotStateMachine waitStatus, RobotStateMachine driveStatus, RobotStateMachine countStatus, RobotStateMachine doneStatus, int correctionAmt){
+		if(sensor1Val >= BLACK && sensor2Val >= BLACK){
+		      lineCount++;
+		      if(lineCount >= numLines){
+		      *myNextStatus = driveStatus;
+		      *myStatus = doneStatus;
+		      }
+		      else{
+		    	  *myStatus = countStatus;
+		      }
+
+		    }
+		    else{
+		      if(sensor1Val >= BLACK && sensor2Val <= WHITE){
+		    chassis->myleft->startInterpolationDegrees(chassis->myleft->getAngleDegrees() + correctionAmt, 1000, SIN);
+		    }
+		    else if(sensor1Val <= WHITE && sensor2Val >= BLACK){
+		    	chassis->myright->startInterpolationDegrees(chassis->myright->getAngleDegrees() + correctionAmt, 1000, SIN);
+		    }
+		    *myNextStatus = driveStatus;
+		    *myStatus = waitStatus;
+		    }
 	}
+
+
+	void LineFollow::followLineDrive(RobotStateMachine * myStatus, RobotStateMachine * myNextStatus, RobotStateMachine detectStatus, RobotStateMachine waitStatus,int forwardAmt){
+		chassis->driveForward(forwardAmt, 1000);
+		*myNextStatus = detectStatus;
+		*myStatus = waitStatus;
+	}
+
 	/**
 	 * getLineCount return current number of counted perpendicular lines
 	 * @return number of perpendicular lines counted since last resetCount()

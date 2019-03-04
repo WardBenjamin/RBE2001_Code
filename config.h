@@ -12,9 +12,26 @@
 
 #define USE_WIFI
 
-#define WHEEL_TRACK 175.0
-#define WHEEL_RADIUS (2.0*25.4/2.0)
+//
+#define WHEEL_TRACK 260
+#define WHEEL_RADIUS (3.165*25.4/2.0)
+//Line Following
+#define NUM_LINES_LANE 4
+#define NUM_LINES_CROSS 1
+#define TURN_ANGLE 90
+#define OFFSET = -10;
 
+//PID vals
+#define KP_PLASTIC 0.001
+#define KI_PLASTIC 0.0001
+#define KD_PLASTIC 0.9
+#define KP_ALUM 0.01
+#define KI_ALUM 0.0001
+#define KD_ALUM 0.6
+
+//Materials
+#define ALUMINUM 1.00
+#define PLASTIC 0.00
 // Pins
 
 /**
@@ -45,8 +62,9 @@
 #define MOTOR3_ENCA 27
 #define MOTOR3_ENCB 14
 
-#define ENCODER_POS_1 1820.0
-#define ENCODER_POS_2 3540.0
+#define ENCODER_POS_45 1850.0
+#define ENCODER_POS_25 3580.0
+#define ENCODER_POS_MAX 3400.0
 // Line Sensor Pins
 #define LINE_SENSE_ONE 			36
 #define LINE_SENSE_TWO 			39
@@ -58,5 +76,7 @@
  * Gripper pin for Servo
  */
 #define SERVO_PIN 5
+#define GRABBER_OPEN 110
+#define GRABBER_CLOSED 180
 
 #endif /* SRC_CONFIG_H_ */
